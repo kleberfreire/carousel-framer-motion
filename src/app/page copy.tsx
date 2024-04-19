@@ -1,16 +1,20 @@
 'use client'
-
+import Image from "next/image";
 import * as React from "react";
-import { SwipeCarousel } from "./components/carousel";
 
 const numberOfImages = 5;
 
-const width = 1200;
-const height = 1200;
-
+const width = 800;
+const height = 800;
 
 export default function Home() {
   const [images, setImages] = React.useState<string[]>([]);
+  async function extractRandomImageUrl(html) {
+    // Aqui você pode implementar a lógica para extrair a URL da imagem aleatória
+    // Vou deixar isso como um exemplo vazio, você precisará implementar essa lógica
+
+    return ''; // Retornar a URL da imagem aleatória
+  }
 
 
   React.useEffect(() => {
@@ -51,8 +55,27 @@ export default function Home() {
   }, []);
   console.log(images)
   return (
-    <div className="h-screen w-screen flex items-center justify-center">
-      <SwipeCarousel images={images}/>
+    <div className="h-screen w-screen flex items-center justify-center p-4">
+    
+      <div className="w-full border border-gray-600 p-4 rounded-lg flex">
+      {images.map((url, index) => {
+        return (
+          <div 
+            className="aspect-square overflow-hidden w-screen shrink-0"
+            key={index} 
+            style={{
+            backgroundImage: `url(${url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            width: 300,
+            height: 300,
+            borderRadius: 10,
+          }}>
+
+          </div>
+        )
+      })}
+      </div>
     </div>
   );
 }
