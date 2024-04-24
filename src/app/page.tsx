@@ -5,8 +5,8 @@ import { SwipeCarousel } from "./components/carousel";
 
 const numberOfImages = 10;
 
-const width = 600;
-const height = 600;
+const width = 1200;
+const height = 1200;
 
 
 export default function Home() {
@@ -38,20 +38,22 @@ export default function Home() {
     }
     
     async function getImages() {
+     
       const promises = Array.from({ length: numberOfImages }, () => getRandomImage());
       await Promise.all(promises).then((urls) => {
         if(urls.length === 0) {
-          return
+          return []
         }
-        console.log('urls', urls);
         const newUrls = urls.map((url, index) =>({
           id: index,
           url: url as string
         }));
-        setImages([...newUrls]);
-      });
+       return newUrls
+      }).then((newUrls) =>  setImages([...newUrls]));
     }
-    getImages();
+
+      getImages();
+    
   }, []);
 
   return (

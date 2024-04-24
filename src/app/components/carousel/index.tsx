@@ -2,10 +2,7 @@
 
 import * as React from "react";
 import { motion, useMotionValue } from "framer-motion"
-import { Fullscreen } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ButtonFullImageCarrousel } from "./button-full-image";
-import { ImageCarousel } from "./image-carousel";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -100,7 +97,7 @@ export const SwipeCarousel = ({images}: {images: ImageType[]}) => {
         </div>
       
         {images.length > 1 && <Dots images={images} imgIndex={imgIndex} setImgIndex={setImgIndex}/>}
-        {selected?.id === imgIndex && <SelectedImage selected={selected} handleOutsideClick={handleOutsideClick} handleChangeFullImage={handleChangeFullImage}/>}
+        {selected?.id === imgIndex && <SelectedImage selected={selected} handleOutsideClick={handleOutsideClick}/>}
     </div>
   );
 }
@@ -183,7 +180,7 @@ export function CountImages ({ images, imgIndex, setImgIndex}: {images: ImageTyp
   )
 }
 
-function SelectedImage ({ selected, handleOutsideClick, handleChangeFullImage }: { selected: ImageType, handleOutsideClick: () => void,handleChangeFullImage: (value:'PREVIOUS' | 'NEXT') => void}) {
+function SelectedImage ({ selected, handleOutsideClick }: { selected: ImageType, handleOutsideClick: () => void }) {
   const [loaded, setLoaded] = React.useState(false);
   if (!selected) {
     return <></>;
