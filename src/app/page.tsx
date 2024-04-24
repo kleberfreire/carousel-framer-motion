@@ -3,14 +3,14 @@
 import * as React from "react";
 import { SwipeCarousel } from "./components/carousel";
 
-const numberOfImages = 5;
+const numberOfImages = 10;
 
-const width = 1200;
-const height = 1200;
+const width = 600;
+const height = 600;
 
 
 export default function Home() {
-  const [images, setImages] = React.useState<string[]>([]);
+  const [images, setImages] = React.useState<{id: number, url: string}[]>([]);
 
 
   React.useEffect(() => {
@@ -40,19 +40,25 @@ export default function Home() {
     async function getImages() {
       const promises = Array.from({ length: numberOfImages }, () => getRandomImage());
       await Promise.all(promises).then((urls) => {
-        console.log(urls)
         if(urls.length === 0) {
           return
         }
-        setImages([...urls as string[]]);
+        console.log('urls', urls);
+        const newUrls = urls.map((url, index) =>({
+          id: index,
+          url: url as string
+        }));
+        setImages([...newUrls]);
       });
     }
     getImages();
   }, []);
-  console.log(images)
+
   return (
     <div className="h-screen w-screen flex items-center justify-center">
-      <SwipeCarousel images={images}/>
+      <div className="w-full max-w-[560px] border border-gray-600 rounded-lg p-2">
+        <SwipeCarousel images={images}/>
+      </div>
     </div>
   );
 }
