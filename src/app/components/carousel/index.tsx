@@ -128,7 +128,7 @@ export function Images({images, handleClick,imgIndex}: {images: ImageType[], img
                   animate={{ scale: 1 }}
                   onClick={() => handleClick(img)}
                   transition={{
-                    duration: 0.5
+                    duration: 0.55
                   }}
                 />) }
               </motion.div>
