@@ -52,7 +52,7 @@ export const SwipeCarousel = ({images}: {images: ImageType[]}) => {
       setImgIndex((prev) => prev - 1);
     }
   }
-
+  //!! auto change image 
   // React.useEffect(() => {
   //   const intervalRef = setInterval(() => {
   //     const x = dragX.get();
@@ -148,11 +148,13 @@ export function Dots ({ images, imgIndex, setImgIndex}: {images: ImageType[], im
             <motion.button 
               key={index} 
               onClick={() => setImgIndex(index)}
+              initial={{ scale: 0.5 }}
               animate={{ 
                 scale:  (index < imgIndex - DOTS_PER_IMAGE && (imgIndex - DOTS_PER_IMAGE >= 0)) || index > imgIndex + DOTS_PER_IMAGE ? 0.5 : imgIndex === index ? 1.3 : 1,
-                // margin: imgIndex !== index ? -1 : 0
               }}
-              // transition={STRING_OPTIONS}
+              transition={{
+                duration: 0.5
+              }}
               className={`${
                 (index < imgIndex - DOTS_PER_IMAGE && (imgIndex - DOTS_PER_IMAGE >= 0)) || index > imgIndex + DOTS_PER_IMAGE ? 'mx-0' :
                 'mx-1'
