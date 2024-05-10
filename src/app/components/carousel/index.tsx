@@ -5,16 +5,19 @@ import { motion, useMotionValue } from "framer-motion"
 import { ButtonFullImageCarrousel } from "./button-full-image";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { ButtonPreviousImageCarrousel } from "./button-previous-image";
+import { ButtonNextImageCarrousel } from "./button-next-image";
 
 const DOTS_PER_IMAGE = 2;
 const ONE_SECOND = 1000;
 const AUTO_DELAY = ONE_SECOND * 10;
-const DRAG_BUFFER = 50;
+const DRAG_BUFFER = 10;
 const STRING_OPTIONS = {
-  type: 'spring',
-  mass: 3,
-  stiffness: 400,
-  damping: 50 
+  duration: 0.4,
+  // type: 'spring',
+  // mass: 3,
+  // stiffness: 400,
+  // damping: 50 
 }
 
 type ImageType = {
@@ -69,6 +72,17 @@ export const SwipeCarousel = ({images}: {images: ImageType[]}) => {
 
   //   return () => clearInterval(intervalRef);
   // }, [])
+
+  // const handleNextClick = (index: number) => {
+  //   if (index < images.length - 1) {
+  //     setImgIndex((prev) => prev + 1);
+  //   }
+  // };
+  // const handlePreviousClick = (index: number) => {
+  //   if (index > 0) {
+  //     setImgIndex((prev) => prev - 1);
+  //   }
+  // };
   return (
     <div>
       <div className="px-28 overflow-hidden mb-2 relative">
@@ -97,7 +111,7 @@ export const SwipeCarousel = ({images}: {images: ImageType[]}) => {
         </div>
       
         {images.length > 1 && <Dots images={images} imgIndex={imgIndex} setImgIndex={setImgIndex}/>}
-        {selected?.id === imgIndex && <SelectedImage selected={selected} handleOutsideClick={handleOutsideClick}/>}
+        {selected?.id === imgIndex && <SelectedImage images={images} selected={selected} handleOutsideClick={handleOutsideClick}/>}
     </div>
   );
 }
@@ -171,23 +185,38 @@ export function CountImages ({ images, imgIndex, setImgIndex}: {images: ImageTyp
   return (
     <div className="mt-4 flex w-full justify-center items-center gap-2 overflow-hidden">
         <p
-           className="rounded-full absolute top-0 right-0 z-10 font-bold  p-2 leading-tight"
-    
-           
+          className="rounded-full absolute top-0 right-0 z-10 font-bold  p-2 leading-tight"
+
         >
           {`${imgIndex + 1} / ${images.length}`}
         </p>
-   
     </div>
   )
 }
 
-function SelectedImage ({ selected, handleOutsideClick }: { selected: ImageType, handleOutsideClick: () => void }) {
+function SelectedImage ({ images,  selected, handleOutsideClick}: { images: ImageType[], selected: ImageType, handleOutsideClick: () => void }) {
   const [loaded, setLoaded] = React.useState(false);
+  const [indexImage, setIndexImage] = React.useState(selected.id);
+
+  const handleNextClick = (index: number) => {
+    if (indexImage < images.length - 1) {
+      setIndexImage((prev) => prev + 1);
+    }
+  };
+  const handlePreviousClick = (index: number) => {
+    if (indexImage > 0) {
+      setIndexImage((prev) => prev - 1);
+    }
+  };
+
+  React.useEffect(() => {
+    if (selected) {
+      setIndexImage(selected.id);
+    }
+  }, [])
   if (!selected) {
     return <></>;
   }
-
   return (
     <div
     onClick={() => handleOutsideClick()}
@@ -195,20 +224,38 @@ function SelectedImage ({ selected, handleOutsideClick }: { selected: ImageType,
   >
     <div
       onClick={(e) => e.stopPropagation()}
-      className="w-full max-w-[1200px] m-auto my-8 px-8 cursor-default"
+      className="w-full max-w-[800px] m-auto my-8  cursor-default overflow-hidden "
     >
-      <motion.div layoutId={`card-${selected.id}`}>
-        <Image src={selected.url}  
-          height="900"
-          width="900"
-          onLoad={() => setLoaded(true)}
-          className={cn(
-            "h-full w-full max-w-900 transition duration-200 rounded-lg aspect-square",
-            loaded ? "blur-none" : "blur-md"
-          )}
-          alt=""
-        />
-      </motion.div>
+        <motion.div 
+            layoutId={`card-${selected.id}`}
+            className="relative rounded-lg  flex"
+            animate={{ 
+              translateX: `-${indexImage * 100}%`,
+              // translateX: `-${selected.id * 100}%`,
+            }}
+            transition={STRING_OPTIONS}
+            >
+            {images.map((img, index) => {
+              return (
+                  <Image src={img.url}  
+                    key={img.id}
+                    height="900"
+                    width="900"
+                    onLoad={() => {
+                      setLoaded(true)
+                    }}
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCACPAI8DASIAAhEBAxEB/8QAFwABAQEBAAAAAAAAAAAAAAAAAAECA//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A7gAIqAAAAAAAAAAAIqAAA0IAAAIAAAKIAoAAIAAAIA0AAgAAACAKAAAAAAgAAA0ACAAIqAAAoAAAAAIAAADQACKgAAAAAAAAAACKgAANAAAAgAAAAAKAAioAACAA0AACAAAAAAAogAAAioAADQgAAAgAAAogCgACAAACADQACKgAAAAAAAAAACAAAD//2Q=="
+                    // blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCACPAI8DAREAAhEBAxEB/8QAGgABAAMBAQEAAAAAAAAAAAAAAwABAgQGCP/EACkQAAIBAgQFBQEBAQAAAAAAAAABAhEhMVFx8GGBkbHBMkGh0fHhAyL/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A+iACnitPLAKfpfLugAlg9H2AAAZ+p8uyAyBAOhXSeYEAeOC0XYCwMTdkuNen6AQHOAEsXq+4AzxWnlgYA9gAM/U+H75AOb/51dPPgAJOkXpTrYAABk6yetOlgMgQB44LQCwGh6Vwr3A0Ac8Ut7sAYHOAEsXq+4Azx0X2BgD2AAN1bfEA54LXfcAJ+l8fsAQOd3beYEAgCwdtHvyBsBIPFc1veACADJ1b6IDDwejAADnAGXqe8LAZA9dJ0TzeG+AAgHN3S4V6/gATdkuNen6AMsHp3sAAEAgG4O9M/G2AoETpdAbc21SlHn9ZAYAzN/8AL423yACWD0YAAc7u28wIB6ltu7AoAZOsn03zACbulkt+ABm7JZvttAEBAIBadGnkA4EAgEAObwXPfyAM3/zq6efAASwenewAASqWLoB6gCOybyA58QAl6nr2sAM3fRb8AYAy5RVq9wNAQBoOq0t9b4AaAgEAGbrJ8Lb51AGbwXPfyAE3ZLN9toAgBk6vh7AeuAxN2pnv6AFuibyAAAG6tvN1AOcqKixfbfkAgNwlR0eDw13vEBQNRdHwdnvfuAwEApuibAAAZOsnwt0/oATd9FvwAM3RUz3/ADmAQHsABk6vhggCm7Uz39ABJ0T426/wAQAbq2+mgFAQBouq4rHe/cDQCwlVU918oDYBTlWywXcDDdE3kqgc4AN1bebqAE3V6W+wMgerlOtlzzAwAU3emW/oAJvBc9/IAzdFrb7AECAQDUXR8HZ737gMBALcm1SoFAYm7Uz39ABJ0i+nUAG6JvIAAIB6gCYAc7u28wBk6yfToAE3emW/oDAFOSTpUCwIA0XVcVZ73eoGgIBABm6vS32AM3guf15ACbtTPxtAEAMpNvh34sD1wGJu1M9/QAt0TeSAADnd23mBicqWWL7AEBuMqWeHbf8AQFA1F0fB4737gMBAKbom+moAADJ1k+nQAJu9Mv0AZuipn2AID2AAydW3yWgBTdqZv43QAJukXxtvlUAQAbq28wKAgDRdVxVnvd6gaAWEq2fthxX8A2AU5VdFgvkDDdE3kqgc4AN1bebqAE3WT4W3zAyB6yU1Si98XvfgDAKbvTJfO6ABN4Ln9eQBm6J8bb5ACBAIBqDo9bfQDAQC3JtUqBQGJu2r34AGTpF6U62ABuibyVQOcCAeoAgAN1bfH49gAn6nw/fIAzeC57+QDAgEAgDp1SeYFgQCAFN3SyXfaAGeCXHfcAJ+l8f3wAIGJSpZY+4HqwKbom+AAAA7t6sAJ+pgZANzdbJU3vADadVVe4FgLB2ay8/gGwIBAAk6t6gDPFLhvsAH+ntz38gG7JvIDnxA9gBmfpfH98AC7JvIDnAB3bebYGJuifG2+QAgJB4rmAgG4P8A61VPPgBQIBG6JvJVA5wBn6ny7ABPHl9gFP0vj++ABA9gBibslxr0/QBlg9H2AADnAP8A09ufgAwNRdJLWnWwDAWsVqu4DgQDMvS9+4AgBLF6sAJ+p8uyAGeCW93AMD2AB/6e3PwAMvS9+4AOyejAAAp4rTywMAXHFaruA4EA6AIBmfpfH98ACAEsXq+4AT9T5dkAP+ntz8AGB//Z"
+                    placeholder="blur"
+                    className={cn(
+                      " w-full max-w-[900px]  transition duration-200 rounded-lg aspect-square",
+                      loaded ? "blur-none" : "blur-md"
+                    )}
+                    alt=""
+                  />
+                )
+              })}
+        </motion.div>
       <motion.div
           initial={{
             opacity: 0,
@@ -221,9 +268,34 @@ function SelectedImage ({ selected, handleOutsideClick }: { selected: ImageType,
           transition={{
             duration: 0.5,
           }}
-          className=" bg-gray-900  p-4  gap-4 flex justify-center items-center rounded-lg mt-4"
+          className=" bg-gray-900  p-4  gap-4 flex justify-between items-center rounded-lg mt-4"
         >
-          <p className="text-gray-50">teste image</p>
+
+        
+          <ButtonPreviousImageCarrousel
+            className="rounded-full opacity-50 shadow-md"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            onClick={() => handlePreviousClick(selected.id)}
+            transition={{
+              duration: 0.55,
+            }}
+          />        
+          <div className="flex-1 text-center">
+            <p className="text-gray-50">teste image</p>
+            <p className="text-gray-50">{`${indexImage + 1} / ${images.length}`}</p>
+          </div>
+      
+    
+          <ButtonNextImageCarrousel
+            className="rounded-full opacity-50 shadow-md"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            onClick={() => handleNextClick(selected.id)}
+            transition={{
+              duration: 0.55,
+            }}
+          />
         </motion.div>
     </div>
   </div>

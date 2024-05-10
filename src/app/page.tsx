@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { SwipeCarousel } from "./components/carousel";
+import { SwipeCarouselThumb } from "./components/carousel-thumb";
 
-const numberOfImages = 10;
+const numberOfImages = 11;
 
 const width = 1200;
 const height = 1200;
@@ -59,7 +60,9 @@ export default function Home() {
   return (
     <div className="h-screen w-screen flex items-center justify-center">
       <div className="w-full max-w-[560px] border border-gray-600 rounded-lg p-2">
-        <SwipeCarousel images={images}/>
+      {/* <div className="w-full max-w-[560px] border border-gray-600 rounded-lg p-2"> */}
+        {/* <SwipeCarousel images={images}/> */}
+        <SwipeCarouselThumb images={images.slice(0,11)}/>
       </div>
     </div>
   );
