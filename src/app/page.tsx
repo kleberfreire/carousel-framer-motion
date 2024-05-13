@@ -62,7 +62,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex gap-10 items-center justify-center">
+    <div className="md:h-screen w-screen flex md:flex-row flex-col-reverse gap-10 items-center justify-center">
       <Reorder.Group axis="y" onReorder={setImages} values={images} className="mt-10 flex flex-col gap-5">
         {images.map((image) => (
           // <Item key={image.id} className="border border-zinc-500 p-2 rounded-lg">
